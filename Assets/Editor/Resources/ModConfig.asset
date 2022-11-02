@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Name: ModConfig
   m_EditorClassIdentifier: 
   id: needyModuleAlarm
-  title: Module Alarm System
+  title: M.A.S.
   author: Nimsay Ramsey
-  description: A needy security system that really doesn't like you solving modules
+  description: "A needy security system that really doesn't like you solving modules\n\nPDF
+    & HTML links coming soon\nModule ID: needyModuleAlarm\n\nGamingWithJanko: Manual
+    Graphics\r\nElectrip blips and beeps - copyc4t\r\nhttps://opengameart.org/content/gui-sounds-collection\r\nLicense
+    - CC3.0"
   version: 1
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: 3eef1f71858cc084fb92c949fc8f5178, type: 3}
