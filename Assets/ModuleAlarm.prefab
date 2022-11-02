@@ -219,6 +219,7 @@ GameObject:
   - component: {fileID: 114819402611463790}
   - component: {fileID: 114976572572698576}
   - component: {fileID: 114504415121476912}
+  - component: {fileID: 114085386026865912}
   - component: {fileID: 114777631341742474}
   - component: {fileID: 114744138197778392}
   - component: {fileID: 95150657333000460}
@@ -4408,6 +4409,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - Mobile/Diffuse
+--- !u!114 &114085386026865912
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1321681919667488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96a2fc4ae3e690a498a0d85a2b5e0b99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114087374901208920
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4788,7 +4800,7 @@ MonoBehaviour:
   ResetDelayMin: 10
   ResetDelayMax: 40
   ModuleType: needyModuleAlarm
-  ModuleDisplayName: Module Alarm System
+  ModuleDisplayName: M.A.S.
   RequiresTimerVisibility: 0
   WarnAtFiveSeconds: 1
 --- !u!114 &114512374777488660
@@ -5008,8 +5020,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Bomb: {fileID: 114976572572698576}
-  Needy: {fileID: 114504415121476912}
   Audio: {fileID: 114819402611463790}
+  Needy: {fileID: 114504415121476912}
+  BossInfo: {fileID: 114085386026865912}
   LightMat:
   - {fileID: 2100000, guid: 786c3d31185014ac2b26f9fe3e2582af, type: 2}
   - {fileID: 2100000, guid: 7c0f328cd00dc48c6b27ca9fcd223941, type: 2}
@@ -5105,8 +5118,9 @@ MonoBehaviour:
   - {fileID: 114430973415977496}
   - {fileID: 114747284419632286}
   - {fileID: 114912881050639542}
+  - {fileID: 0}
   IsPassThrough: 0
-  ChildRowLength: 1
+  ChildRowLength: 4
   Highlight: {fileID: 114916768817871158}
   SelectableColliders: []
   DefaultSelectableIndex: 0

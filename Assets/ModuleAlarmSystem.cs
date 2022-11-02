@@ -12,6 +12,7 @@ public class ModuleAlarmSystem : MonoBehaviour {
 	public KMBombInfo Bomb;
 	public KMAudio Audio;
 	public KMNeedyModule Needy;
+	public KMBossModule BossInfo;
 
 	public Material[] LightMat; //UnlitGreen LitGreen UnlitOrange LitOrange
 	public Renderer[] LEDs;
@@ -63,34 +64,62 @@ public class ModuleAlarmSystem : MonoBehaviour {
 		{9, 19, 9}//   9
 	};
 	private int[] invertList = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
-	private string[] BOSSLIST = {
-		//Custom Additions
-		"Turn The Keys", "Custom Keys",
-		"The Swan",
-		"Silo Authorization",
-		"Scrabble Scramble",
-		//Safe and Password Modules
+	private List<string> BOSSLIST = new List<string> {
+		//"The Boss Example Module",//Example Module
+
+		//Safes
 		"Safety Safe",
+		"Combination Lock",
 		"The Jewel Vault",
-		//End Solves
-		"Forget Me Not",
-		"Forget Everything",
-		"Forget This",
-		"Forget Them All",
-		"Forget Enigma",
-		"Forget Us Not",
-		"Forget Perspective",
-		"Forget Infinity"
+		//Keypads
+		"Number Pad",
+		"Not Number Pad",
+		"Number Sequence",
+		"Burglar Alarm",
+		"Passcodes",
+		"Prime Encryption",
+		//Interfaces
+		"The Generator",
+		"Double-Oh",
+		"Cursed Double-Oh",
+		"Not Double-Oh",
+		"Factory Code",
+		"Sysadmin",
+		"Web Design",
+		"Scripting",
+		"Waste Management",
+		//Military Instruments
+		"Silo Authorization",
+		"Military Encryption",
+		"Battleship",
+		"Encrypted Morse",
+		"Morsematics",
+		"Not Morsematics",
+		//REDACTED
+		"The Crystal Maze",
+		"The Cube",
+		"Lightspeed",
+		"V",
+		//Others
+		"The Stock Market",
+		"Crypto Market",
+		"Algorithmia",
+		"Silly Slots"
 	};
-	private string[] BLACKLIST = {
+	private List<string> BLACKLIST = new List<string> {
 		"Doomsday Button",
 		"Castor",
 		"Pollux",
 		"X",
-		"Y"
+		"Y",
+		"Turn The Key",
+		"Turn The Keys",
+		"Custom Keys"
 	};
 
 	private bool needyActive = false;
+	private int statusLAG = 0;
+	private int lagTime = 180;
 	//-----------------------------------------------------//
 	
 	int moduleId;
@@ -104,10 +133,21 @@ public class ModuleAlarmSystem : MonoBehaviour {
     }
 
 	void NeedyStart() {
-		Debug.LogFormat("[ModuleAlarmSystem #{0}] Security System Engaged. Standing Idle", moduleId);
+		Debug.LogFormat("[M.A.S. #{0}] Security System Engaged. Standing Idle", moduleId);
 		needyActive = true;
 		LEDs[0].material = LightMat[1];
-		SegmentDisplay.text = "*****";
+		SegmentDisplay.text = "ARMED";
+		statusLAG = lagTime;
+		/*string[] updatedBossList = BossInfo.GetIgnoredModules("42");
+		foreach (string BOSS in updatedBossList){
+			BOSSLIST.Add(BOSS);
+		}*/
+
+		string[] updatedBlackList = BossInfo.GetIgnoredModules("Forget Infinity");
+		foreach (string BOSS in updatedBlackList){
+			BLACKLIST.Add(BOSS);
+		}
+
 		foreach (KMSelectable NAME in Keypad) {
 			KMSelectable pressedObject = NAME;
 			NAME.OnInteract += delegate () { keypadPress(pressedObject); return false; };
@@ -121,6 +161,10 @@ public class ModuleAlarmSystem : MonoBehaviour {
 		MODE += 1;
 		if (MODE == 3) {MODE = 0;}
 		LEDs[MODE].material = LightMat[1];
+		if(TRIPPED && Tflag && SubmitIndex != 0){
+			SubmitIndex = 0;
+			RenderDisplay();
+		}
 	}
 
 	void keypadPress(KMSelectable KEY) {
@@ -152,21 +196,48 @@ public class ModuleAlarmSystem : MonoBehaviour {
             GrabTrippedName();
 			//Debug.Log(Tletter + " // " + MostRecent);
 
+			if(SOLVES == Bomb.GetSolvableModuleIDs().Count()){
+				SegmentDisplay.text = "*OFF*";
+				statusLAG = lagTime;
+			}
+
 			if(!BLACKLIST.Contains(MostRecent) && !TRIPPED && needyActive){
 				solveCount += 1;
 				int COIN = UnityEngine.Random.Range(0, 2);
-				if (COIN == 1 || solveCount == 3) {//COIN == 1
+				//Debug.Log(SOLVES + " // " + Bomb.GetSolvableModuleIDs().Count());
+				if (BOSSLIST.Contains(MostRecent) && SOLVES != Bomb.GetSolvableModuleIDs().Count()){// BOSS MODULES SHOULD ALWAYS ACTIVATE
+					Debug.LogFormat("[M.A.S. #{0}] Security Module detected!", moduleId);
+					solveCount = 0;
+					TripCount += 1;
+					ModuleTripped();
+				} else if ((COIN == 1 || solveCount == 3) && SOLVES != Bomb.GetSolvableModuleIDs().Count()) {//COIN == 1
 					solveCount = 0;
 					TripCount += 1;
 					ModuleTripped();
 				}
 			} else {
-				Debug.LogFormat("[ModuleAlarmSystem #{0}] Module {1} is Blacklisted. Ignoring", moduleId, MostRecent);
+				if(BLACKLIST.Contains(MostRecent)){
+					Debug.LogFormat("[M.A.S. #{0}] Module {1} is Blacklisted. Ignoring", moduleId, MostRecent);
+				} else if (TRIPPED) {
+					Debug.LogFormat("[M.A.S. #{0}] Alarm is currently tripped. Ignoring Module {1}", moduleId, MostRecent);
+				} else {
+					Debug.LogFormat("[M.A.S. #{0}] Alarm is deactivated. Ignoring Module {1}", moduleId, MostRecent);
+				}
 			}
         }
 
 		if (needyActive) {
 			TripCheck();
+		}
+
+		if (statusLAG != 0) {
+			statusLAG -= 1;
+			if (statusLAG == 1) {
+				if(!TRIPPED){
+					if(SOLVES == Bomb.GetSolvableModuleIDs().Count()){ SegmentDisplay.text = "     "; } else { SegmentDisplay.text = "*****"; }
+					
+				}
+			}
 		}
 	}
 
@@ -230,8 +301,8 @@ public class ModuleAlarmSystem : MonoBehaviour {
 			}
 		}
 
-		Debug.LogFormat("[ModuleAlarmSystem #{0}] [ALARM TRIPPED BY {1}] Number of trips is [{2}] TRIP letter is [{3}] Display showing [{4}]", moduleId, MostRecent, TripCount, Tletter, REND);
-		Debug.LogFormat("[ModuleAlarmSystem #{0}] Solution Code [{1}{2}{3}{4}{5}] on MODE [{6}]", moduleId, SolveCode[0], SolveCode[1], SolveCode[2], SolveCode[3], SolveCode[4], SolveMODE+1);
+		Debug.LogFormat("[M.A.S. #{0}] [ALARM TRIPPED BY {1}] Number of trips is [{2}] TRIP letter is [{3}] Display showing [{4}]", moduleId, MostRecent, TripCount, Tletter, REND);
+		Debug.LogFormat("[M.A.S. #{0}] Solution Code [{1}{2}{3}{4}{5}] on MODE [{6}]", moduleId, SolveCode[0], SolveCode[1], SolveCode[2], SolveCode[3], SolveCode[4], SolveMODE+1);
 		SegmentDisplay.text = REND;
 		TRIPPED = true;
 	}
@@ -239,7 +310,7 @@ public class ModuleAlarmSystem : MonoBehaviour {
 	bool CheckSerialMatch() {
 		string serialNum = Bomb.GetSerialNumber();
 		for (int i = 0; i < 6; i++){
-			if (serialNum[i].ToString() == Tletter){return true;}
+			if (serialNum[i].ToString() == Tletter || serialNum[i].ToString() == Tnumber.ToString()){return true;}
 		}
 		return false;
 	}
@@ -255,6 +326,13 @@ public class ModuleAlarmSystem : MonoBehaviour {
    	    	if (module.StartsWith("The ")) {
   	        	module = module.Substring(4);
         	}
+			if (module.Contains("Cipher") || (module.Contains("Cycle") && !(module == "USA Cycle" || module == "Color-Cycle Button" || module == "Symbol Cycle" || module == "Light Cycle"))){
+				BOSSLIST.Add(MostRecent);
+			}
+			if (!Regex.IsMatch(module.Substring(0, 1), "[a-zA-Z0-9]")){
+				BLACKLIST.Add(MostRecent);
+				return;
+			}
 			Tletter = module.Substring(0, 1).ToUpper();
 			if(Regex.IsMatch(Tletter, "[0-9]")){
 				Tnumber = Int32.Parse(Tletter);
@@ -283,16 +361,25 @@ public class ModuleAlarmSystem : MonoBehaviour {
 			Needy.SetNeedyTimeRemaining(120);
 			Tflag = true;
 			LEDs[3].material = LightMat[3];
-		} else if (!TRIPPED) { //Needy.GetNeedyTimeRemaining() != SelectedNumber
+		} else if (!TRIPPED) {
 			Needy.SetNeedyTimeRemaining(88);
 			LEDs[3].material = LightMat[2];
 		} else if (Needy.GetNeedyTimeRemaining() < 0.5f) {
-			Needy.HandleStrike();
-			SubmitIndex = 0;
-			TRIPPED = false;
-			Tflag = false;
-			SegmentDisplay.text = "ERROR";
-			Debug.LogFormat("[ModuleAlarmSystem #{0}] Module Striked [Time Depleted] // Returning to Idle", moduleId);
+			if(SOLVES == Bomb.GetSolvableModuleIDs().Count()) {
+				SegmentDisplay.text = "DHORK";
+				SubmitIndex = 0;
+				TRIPPED = false;
+				Tflag = false;
+				Debug.LogFormat("[M.A.S. #{0}] Bomb diffused before alarm was disabled", moduleId);
+			} else {
+				SegmentDisplay.text = "ERROR";
+				Needy.HandleStrike();
+				statusLAG = lagTime;
+				SubmitIndex = 0;
+				TRIPPED = false;
+				Tflag = false;
+				Debug.LogFormat("[M.A.S. #{0}] Module Striked [Time Depleted] // Returning to Idle", moduleId);
+			}
 		}
 	}
 
@@ -312,11 +399,104 @@ public class ModuleAlarmSystem : MonoBehaviour {
 		if (passed){
 			Audio.PlaySoundAtTransform("Confirm1", transform);
 			SegmentDisplay.text = "*****";
-			Debug.LogFormat("[ModuleAlarmSystem #{0}] Submitted Code [{1}{2}{3}{4}{5}] on MODE [{6}] // Code Accepted", moduleId, SubmitCode[0], SubmitCode[1], SubmitCode[2], SubmitCode[3], SubmitCode[4], MODE+1);
+			Debug.LogFormat("[M.A.S. #{0}] Submitted Code [{1}{2}{3}{4}{5}] on MODE [{6}] // Code Accepted", moduleId, SubmitCode[0], SubmitCode[1], SubmitCode[2], SubmitCode[3], SubmitCode[4], MODE+1);
 		} else {
 			SegmentDisplay.text = "ERROR";
-			Debug.LogFormat("[ModuleAlarmSystem #{0}] Submitted Code [{1}{2}{3}{4}{5}] on MODE [{6}] // Incorrect Code [Module Striked]", moduleId, SubmitCode[0], SubmitCode[1], SubmitCode[2], SubmitCode[3], SubmitCode[4], MODE+1);
+			statusLAG = lagTime;
+			Debug.LogFormat("[M.A.S. #{0}] Submitted Code [{1}{2}{3}{4}{5}] on MODE [{6}] // Incorrect Code [Module Striked]", moduleId, SubmitCode[0], SubmitCode[1], SubmitCode[2], SubmitCode[3], SubmitCode[4], MODE+1);
 		}
-		Debug.LogFormat("[ModuleAlarmSystem #{0}] Returning to Idle", moduleId);
+		Debug.LogFormat("[M.A.S. #{0}] Returning to Idle", moduleId);
 	}
+
+		// Twitch Plays Support by Kilo Bites // Modified by Nimsay Ramsey
+
+#pragma warning disable 414
+	private readonly string TwitchHelpMessage = @"!{0} Press 0-9 1-5 to push a number # times || !{0} Press Mode 1-3 to push the Mode button # times & clear the display";
+#pragma warning restore 414
+
+	bool isValidPos(string n)
+	{
+		string[] valids = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "MODE"};
+		if (!valids.Contains(n))
+		{
+			return false;
+		}
+		return true;
+	}
+
+	IEnumerator ProcessTwitchCommand (string command)
+	{
+		yield return null;
+
+		string[] split = command.ToUpperInvariant().Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+
+		if (split[0].EqualsIgnoreCase("PRESS"))
+		{
+			int numberClicks = 0;
+			int pos = 0;
+			if (split.Length != 3)
+			{
+				yield return "sendtochaterror Please specify a button to press!";
+				yield break;
+			}
+			else if (!isValidPos(split[1]))
+			{
+				yield return "sendtochaterror " + split[1] + " is not a valid button!";
+				yield break;
+			}
+			if(split[1].EqualsIgnoreCase("MODE")){
+				if (!"123".Any(x => split[2].Contains(x)))
+				{
+					yield return "sendtochaterror Range must be between 1-3!";
+					yield break;
+				}
+				int.TryParse(split[2], out numberClicks);
+				var presses = 0;
+				while (presses != numberClicks)
+				{
+					ModeButton.OnInteract();
+					presses++;
+					yield return new WaitForSeconds(0.1f);
+				}
+			} else {
+				if (!"12345".Any(x => split[2].Contains(x)))
+				{
+					yield return "sendtochaterror Range must be between 1-5!";
+					yield break;
+				}
+				int.TryParse(split[1], out pos);
+				int.TryParse(split[2], out numberClicks);
+
+				var presses = 0;
+				while (presses != numberClicks)
+				{
+					Keypad[pos].OnInteract();
+					presses++;
+					yield return new WaitForSeconds(0.1f);
+				}
+			}
+			yield break;
+		}
+	}
+
+	void TwitchHandleForcedSolve() { //Autosolver
+		StartCoroutine(DealWithNeedy());
+	}
+	
+	IEnumerator DealWithNeedy () {
+		while (true) {
+			while(!TRIPPED){
+				yield return null;
+			}
+			while (MODE != SolveMODE || SubmitIndex > 0) {
+				ModeButton.OnInteract();
+				yield return new WaitForSeconds(0.1f);
+			}
+			for (int i = SubmitIndex; i < 5; i++){
+				Keypad[SolveCode[SubmitIndex]].OnInteract();
+				yield return new WaitForSeconds(0.1f);
+			}
+		}
+	}
+
 }
