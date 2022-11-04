@@ -42,7 +42,7 @@ public class ModuleAlarmSystem : MonoBehaviour {
 	private int Tnumber;
 
 	private bool TRIPPED = false;
-	private bool Tflag = false;
+	private bool Tflag = false; // Starts the module's countdown when tripped
 
 	private int SOLVES;
 	private string MostRecent;
@@ -64,58 +64,8 @@ public class ModuleAlarmSystem : MonoBehaviour {
 		{9, 19, 9}//   9
 	};
 	private int[] invertList = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
-	private List<string> BOSSLIST = new List<string> {
-		//"The Boss Example Module",//Example Module
-
-		//Safes
-		"Safety Safe",
-		"Combination Lock",
-		"The Jewel Vault",
-		//Keypads
-		"Number Pad",
-		"Not Number Pad",
-		"Number Sequence",
-		"Burglar Alarm",
-		"Passcodes",
-		"Prime Encryption",
-		//Interfaces
-		"The Generator",
-		"Double-Oh",
-		"Cursed Double-Oh",
-		"Not Double-Oh",
-		"Factory Code",
-		"Sysadmin",
-		"Web Design",
-		"Scripting",
-		"Waste Management",
-		//Military Instruments
-		"Silo Authorization",
-		"Military Encryption",
-		"Battleship",
-		"Encrypted Morse",
-		"Morsematics",
-		"Not Morsematics",
-		//REDACTED
-		"The Crystal Maze",
-		"The Cube",
-		"Lightspeed",
-		"V",
-		//Others
-		"The Stock Market",
-		"Crypto Market",
-		"Algorithmia",
-		"Silly Slots"
-	};
-	private List<string> BLACKLIST = new List<string> {
-		"Doomsday Button",
-		"Castor",
-		"Pollux",
-		"X",
-		"Y",
-		"Turn The Key",
-		"Turn The Keys",
-		"Custom Keys"
-	};
+	private List<string> BOSSLIST = new List<string> {};
+	private List<string> BLACKLIST = new List<string> {};
 
 	private bool needyActive = false;
 	private int statusLAG = 0;
@@ -143,10 +93,68 @@ public class ModuleAlarmSystem : MonoBehaviour {
 			BOSSLIST.Add(BOSS);
 		}*/
 
-		string[] updatedBlackList = BossInfo.GetIgnoredModules("Forget Infinity");
-		foreach (string BOSS in updatedBlackList){
-			BLACKLIST.Add(BOSS);
+		int splitInd = 0;
+		string[] updatedIgnoreList = BossInfo.GetIgnoredModules("M.A.S.", new string[]{ // Falls back onto an offline list in case servers are offline
+			"Doomsday Button",
+			"Turn The Key",
+			"Turn The Keys",
+			"Custom Keys",
+			"",
+			"Safety Safe", //Safes
+			"Combination Lock",
+			"The Jewel Vault",
+			"Number Pad", //Keypads
+			"Not Number Pad",
+			"Number Sequence",
+			"Burglar Alarm",
+			"Passcodes",
+			"Prime Encryption",
+			"Forget Infinity",
+			"The Generator", //Interfaces
+			"Double-Oh",
+			"Cursed Double-Oh",
+			"Not Double-Oh",
+			"Factory Code",
+			"Sysadmin",
+			"Web Design",
+			"Scripting",
+			"Waste Management",
+			"Silo Authorization", //Military Instruments
+			"Military Encryption",
+			"Battleship",
+			"Encrypted Morse",
+			"Morse War",
+			"Morsematics",
+			"Not Morsematics",
+			"Binary Memory",
+			"Access Codes",
+			"The Crystal Maze", //REDACTED
+			"The Cube",
+			"Lightspeed",
+			"V",
+			"The Stock Market", //Others
+			"Crypto Market",
+			"Algorithmia",
+			"Silly Slots",
+			"Cookie Jars"
+		});
+		foreach (string BOSS in updatedIgnoreList){
+			if(BOSS != ""){ BLACKLIST.Add(BOSS); } else {
+				splitInd += 1;
+				break;
+			}
+			splitInd += 1;
+			//Debug.Log(BOSS);
 		}
+
+		//Debug.Log("SPLIT FOUND");
+
+		for (int i = splitInd; i < updatedIgnoreList.Count(); i++){
+			BOSSLIST.Add(updatedIgnoreList[i]);
+			//Debug.Log(updatedIgnoreList[i]);
+		}
+		//Debug.Log(BLACKLIST.Count());
+		//Debug.Log(BOSSLIST.Count());
 
 		foreach (KMSelectable NAME in Keypad) {
 			KMSelectable pressedObject = NAME;

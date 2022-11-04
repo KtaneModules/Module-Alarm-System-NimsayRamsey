@@ -14,9 +14,10 @@ MonoBehaviour:
   id: needyModuleAlarm
   title: M.A.S.
   author: Nimsay Ramsey
-  description: "A needy security system that really doesn't like you solving modules\n\nPDF
-    & HTML links coming soon\nModule ID: needyModuleAlarm\n\nGamingWithJanko: Manual
-    Graphics\r\nElectrip blips and beeps - copyc4t\r\nhttps://opengameart.org/content/gui-sounds-collection\r\nLicense
+  description: "A needy security system that really doesn't like you solving modules\r\n\r\nHTML:
+    https://ktane.timwi.de/HTML/M.A.S..html\r\nPDF: https://ktane.timwi.de/PDF/M.A.S..pdf\r\nModule
+    ID: needyModuleAlarm\r\n\r\nGamingWithJanko: Manual Graphics\r\nElectrip blips
+    and beeps - copyc4t\r\nhttps://opengameart.org/content/gui-sounds-collection\r\nLicense
     - CC3.0"
   version: 1
   outputFolder: build
