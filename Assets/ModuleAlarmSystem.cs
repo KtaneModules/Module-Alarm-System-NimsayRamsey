@@ -99,7 +99,7 @@ public class ModuleAlarmSystem : MonoBehaviour {
 			"Turn The Key",
 			"Turn The Keys",
 			"Custom Keys",
-			"",
+			"", // <--- Why is this here???
 			"Safety Safe", //Safes
 			"Combination Lock",
 			"The Jewel Vault",
